@@ -1,5 +1,10 @@
 # IoT Analysis Project
 
+## Active Branches
+
+- `qianao` plot weather data with Python2
+- `R` analyze correlation of data with R (TODO)
+
 ## Instructions
 
 To checkout a specific branch, use
