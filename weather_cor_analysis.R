@@ -24,6 +24,7 @@
 
 # The following variables seems to be fundamental
 # "Sample.Time", "Temperature", "VAPOR_PRESSURE", "DRY_AIR_PRESSURE", "WET_AIR_DENSITY"? ...
+# for instant variables
 
 # Load libraries
 library(ggplot2)
@@ -68,7 +69,6 @@ heat.index.plot <- ggplot(heat.index.melt, aes(x = Time, y = value, color = vari
 heat.index.plot
 
 # Build linear model to explore the DEW_POINT variable
-# NOT ACCURATE, NEED FURTHER STUDY
 dew.point.mod <- lm(DEW_POINT ~ Temperature + VAPOR_PRESSURE, data = train.set)
 summary(dew.point.mod)
 p.dew.point <- predict(dew.point.mod, newdata = test.set)
@@ -98,8 +98,8 @@ density.altitude.plot <- ggplot(density.altitude.melt, aes(x = Time, y = value, 
     labs(title = "True Value vs. Prediction for Density Altitude")
 density.altitude.plot
 
-# NOTE: AVG_TEMP_TODAY is determined by Temperature with ARMA model
-# TODO: generate AVG_TEMP_TODAY from Temperature
+# NOTE: AVG_TEMP_TODAY is determined by Temperature with MA model
+# It is not appropriate to draw a plot about it
 
 # Build linear model to explore the WET_BULB_GLOBE_TEMP variable
 wet.bulb.globe.mod <- lm(WET_BULB_GLOBE_TEMP ~ Temperature + VAPOR_PRESSURE, data = train.set)
