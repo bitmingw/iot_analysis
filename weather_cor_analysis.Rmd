@@ -1,0 +1,250 @@
+---
+title: "Correlation of Weather Data"
+output:
+  pdf_document: default
+  html_document:
+    highlight: pygments
+    theme: cerulean
+---
+
+```{r, echo=FALSE}
+library(ggplot2)
+library(caTools)
+library(reshape)
+
+# Assume the data and the script are in the working directory
+wdata <- read.csv("data2.csv", stringsAsFactors = FALSE)
+
+# Convert time string to POSIX time
+wdata$Sample.Time <- paste("2015-08-13", wdata$Sample.Time)
+wdata$Time <- strptime(wdata$Sample.Time, "%Y-%m-%d %H:%M:%S")
+
+# Explore the data correlation
+# Split the data set into 2 parts
+set.seed(6607)
+split.vec <- sample.split(wdata[,1], 2/3)
+train.set <- subset(wdata, split.vec)
+test.set <- subset(wdata, !split.vec)
+```
+
+In this document we will explore the correlations among around 20 weather variables. The provided data has the following variables.
+
+```{r}
+names(wdata)
+```
+
+Some of those variables represent the instant values of weather conditions, e.g. `Temperature`, others are calculated by sum up over a period of time, e.g. `AVG_TEMP_TODAY`. In this analysis we don't explore the time series properties, so only the variables in the first category is considered. We will construct linear models to explain most of those variables. To verify the results, we observe the R-squared value and plot the predictions over the truth in a separate data set.
+
+### Linear model of Wind.Chill
+
+`Wind.Chill` is a feeling of temperature under the influence of air flow. From its physical meaning we know that it is related to temperature and wind speed.
+
+```{r}
+wind.chill.mod <- lm(Wind.Chill ~ Temperature + Avg.Wind.Speed, data = train.set)
+summary(wind.chill.mod)
+p.Wind.Chill <- predict(wind.chill.mod, newdata = test.set)
+wind.chill.data <- cbind(test.set[c("Time", "Wind.Chill")], p.Wind.Chill)
+wind.chill.melt <- melt(wind.chill.data, id.vars = c("Time"))
+wind.chill.plot <- ggplot(wind.chill.melt, aes(x = Time, y = value, color = variable)) + geom_line() +
+    labs(title = "True Value vs. Prediction for Wind Chill")
+wind.chill.plot
+```
+
+### Linear model of HEAT_INDEX
+
+`HEAT_INDEX` represents the feeling of heat when considering the moisture in the air. The relationship is also straight forward.
+
+```{r}
+heat.index.mod <- lm(HEAT_INDEX ~ Temperature + VAPOR_PRESSURE, data = train.set)
+summary(heat.index.mod)
+p.heat.index <- predict(heat.index.mod, newdata = test.set)
+heat.index.data <- cbind(test.set[c("Time", "HEAT_INDEX")], p.heat.index)
+heat.index.melt <- melt(heat.index.data, id.vars = c("Time"))
+heat.index.plot <- ggplot(heat.index.melt, aes(x = Time, y = value, color = variable)) + geom_line() +
+    labs(title = "True Value vs. Prediction for Heat Index")
+heat.index.plot
+```
+
+### Linear model of DEW_POINT
+
+`DEW_POINT` is a specific temperature that moisture in the air is converted to water.
+
+```{r}
+dew.point.mod <- lm(DEW_POINT ~ Temperature + VAPOR_PRESSURE, data = train.set)
+summary(dew.point.mod)
+p.dew.point <- predict(dew.point.mod, newdata = test.set)
+dew.point.data <- cbind(test.set[c("Time", "DEW_POINT")], p.dew.point)
+dew.point.melt <- melt(dew.point.data, id.vars = c("Time"))
+dew.point.plot <- ggplot(dew.point.melt, aes(x = Time, y = value, color = variable)) + geom_line() +
+    labs(title = "True Value vs. Prediction for Dew Point")
+dew.point.plot
+```
+
+### Linear model of DEGREE_DAY
+
+`DEGREE_DAY` is actually a wrapping variable of average temperature in a period of time. It is used to generate the weather forecast report.
+
+```{r}
+degree.day.mod <- lm(DEGREE_DAY ~ AVG_TEMP_TODAY, data = train.set)
+summary(degree.day.mod)
+p.degree.day <- predict(degree.day.mod, newdata = test.set)
+degree.day.data <- cbind(test.set[c("Time", "DEGREE_DAY")], p.degree.day)
+degree.day.melt <- melt(degree.day.data, id.vars = c("Time"))
+degree.day.plot <- ggplot(degree.day.melt, aes(x = Time, y = value, color = variable)) + geom_line() +
+    labs(title = "True Value vs. Prediction for Degree Day")
+degree.day.plot
+```
+
+### Linear model of DENSITY_ALTITUDE
+
+`DENSITY_ALTITUDE` is a measurement of air density using the standard altitude density.
+
+```{r}
+density.altitude.mod <- lm(DENSITY_ALTITUDE ~ WET_AIR_DENSITY, data = train.set)
+summary(density.altitude.mod)
+p.density.altitude <- predict(density.altitude.mod, newdata = test.set)
+density.altitude.data <- cbind(test.set[c("Time", "DENSITY_ALTITUDE")], p.density.altitude)
+density.altitude.melt <- melt(density.altitude.data, id.vars = c("Time"))
+density.altitude.plot <- ggplot(density.altitude.melt, aes(x = Time, y = value, color = variable)) + geom_line() +
+    labs(title = "True Value vs. Prediction for Density Altitude")
+density.altitude.plot
+```
+
+### The AVG\_TEMP\_TODAY variable
+
+`AVG_TEMP_TODAY` is generated from `Temperature` with moving average method. It is in the field of time series and we won't give a plot about that.
+
+### Linear model of WET\_BULB\_GLOBE\_TEMP
+
+`WET_BULB_GLOBE_TEMP` is the measured temperature with a wet thermograph. It is determined by the temperature and moisture in the air.
+
+```{r}
+wet.bulb.globe.mod <- lm(WET_BULB_GLOBE_TEMP ~ Temperature + VAPOR_PRESSURE, data = train.set)
+summary(wet.bulb.globe.mod)
+p.wet.bulb.globe <- predict(wet.bulb.globe.mod, newdata = test.set)
+wet.bulb.globe.data <- cbind(test.set[c("Time", "WET_BULB_GLOBE_TEMP")], p.wet.bulb.globe)
+wet.bulb.globe.melt <- melt(wet.bulb.globe.data, id.vars = c("Time"))
+wet.bulb.globe.plot <- ggplot(wet.bulb.globe.melt, aes(x = Time, y = value, color = variable)) + geom_line() +
+    labs(title = "True Value vs. Prediction for Wet Bulb Globe Temperature")
+wet.bulb.globe.plot
+```
+
+### Linear model of SAT\_VAPOR\_PRESSURE
+
+`SAT_VAPOR_PRESSURE` is the maximum possible moisture in the air. From physics we know it is determined by the temperature.
+
+```{r}
+sat.vapor.pressure.mod <- lm(SAT_VAPOR_PRESSURE ~ Temperature, data = train.set)
+summary(sat.vapor.pressure.mod)
+p.sat.vapor.pressure <- predict(sat.vapor.pressure.mod, newdata = test.set)
+sat.vapor.pressure.data <- cbind(test.set[c("Time", "SAT_VAPOR_PRESSURE")], p.sat.vapor.pressure)
+sat.vapor.pressure.melt <- melt(sat.vapor.pressure.data, id.vars = c("Time"))
+sat.vapor.plot <- ggplot(sat.vapor.pressure.melt, aes(x = Time, y = value, color = variable)) + geom_line() +
+    labs(title = "True Value vs. Prediction for Saturated Vapor Pressure")
+sat.vapor.plot
+```
+
+### Linear model of DRY\_AIR\_DENSITY
+
+We guess `DRY_AIR_DENSITY` is mostly determined by temperature.
+
+```{r}
+dry.air.density.mod <- lm(DRY_AIR_DENSITY ~ Temperature, data = train.set)
+summary(dry.air.density.mod)
+p.dry.air.density <- predict(dry.air.density.mod, newdata = test.set)
+dry.air.density.data <- cbind(test.set[c("Time", "DRY_AIR_DENSITY")], p.dry.air.density)
+dry.air.density.melt <- melt(dry.air.density.data, id.vars = c("Time"))
+dry.air.density.plot <- ggplot(dry.air.density.melt, aes(x = Time, y = value, color = variable)) + geom_line() +
+    labs(title = "True Value vs. Prediction for Dry Air Density")
+dry.air.density.plot
+```
+
+### Linear model of ABSOLUTE_HUMIDITY
+
+`ABSOLUTE_HUMIDITY` is mainly determined by moisture in the air. It is also related to the air pressure.
+
+```{r}
+abs.humidity.mod <- lm(ABSOLUTE_HUMIDITY ~ DRY_AIR_PRESSURE + VAPOR_PRESSURE, data = train.set)
+summary(abs.humidity.mod)
+p.abs.humidity <- predict(abs.humidity.mod, newdata = test.set)
+abs.humidity.data <- cbind(test.set[c("Time", "ABSOLUTE_HUMIDITY")], p.abs.humidity)
+abs.humidity.melt <- melt(abs.humidity.data, id.vars = c("Time"))
+abs.humidity.plot <- ggplot(abs.humidity.melt, aes(x = Time, y = value, color = variable)) + geom_line() +
+    labs(title = "True Value vs. Prediction for Absolute Humidity")
+abs.humidity.plot
+```
+
+### The AIR\_DENSITY\_RATIO variable
+
+By definition `AIR_DENSITY_RATIO` = `DRY_AIR_DENSITY` / `WET_AIR_DENSITY`. It is easy to verify this.
+
+### Linear model of ADJUSTED_ALTITUDE
+
+Since `DENSITY_ALTITUDE` is determined by `WET_AIR_DENSITY`, we guess it is the same case for adjusted altitude.
+
+```{r}
+adj.altitude.mod <- lm(ADJUSTED_ALTITUDE ~ WET_AIR_DENSITY, data = train.set)
+summary(adj.altitude.mod)
+p.adj.altitude <- predict(adj.altitude.mod, newdata = test.set)
+adj.altitude.data <- cbind(test.set[c("Time", "ADJUSTED_ALTITUDE")], p.adj.altitude)
+adj.altitude.melt <- melt(adj.altitude.data, id.vars = c("Time"))
+adj.altitude.plot <- ggplot(adj.altitude.melt, aes(x = Time, y = value, color = variable)) + geom_line() +
+    labs(title = "True Value vs. Prediction for Adjusted Altitude")
+adj.altitude.plot
+```
+
+### The SAE\_CORRECTION\_FACTOR variable
+
+This is a variable in range (0.97 - 1.01) and has no significant influence, so we will ignore the discussion of that.
+
+### Linear model of WET\_AIR\_DENSITY
+
+Since `DRY_AIR_DENSITY` is determined by `Temperature`, we guess it is the same case for wet air density.
+
+```{r}
+wet.air.density.mod <- lm(WET_AIR_DENSITY ~ Temperature, data = train.set)
+summary(wet.air.density.mod)
+p.wet.air.density <- predict(wet.air.density.mod, newdata = test.set)
+wet.air.density.data <- cbind(test.set[c("Time", "WET_AIR_DENSITY")], p.wet.air.density)
+wet.air.density.melt <- melt <- melt(wet.air.density.data, id.vars = c("Time"))
+wet.air.density.plot <- ggplot(wet.air.density.melt, aes(x = Time, y = value, color = variable)) + geom_line() +
+    labs(title = "True Value vs. Prediction for Wet Air Density")
+wet.air.density.plot
+```
+
+### Linear model of WET\_BULB\_TEMPERATURE
+
+This is similar to `WET_BULB_GLOBE_TEMP` variable.
+
+```{r}
+wet.bulb.temp.mod <- lm(WET_BULB_TEMPERATURE ~ Temperature + VAPOR_PRESSURE, data = train.set)
+summary(wet.bulb.temp.mod)
+p.wet.bulb.temp <- predict(wet.bulb.temp.mod, newdata = test.set)
+wet.bulb.data <- cbind(test.set[c("Time", "WET_BULB_TEMPERATURE")], p.wet.bulb.temp)
+wet.bulb.melt <- melt(wet.bulb.data, id.vars = c("Time"))
+wet.bulb.plot <- ggplot(wet.bulb.melt, aes(x = Time, y = value, color = variable)) + geom_line() +
+    labs(title = "True Value vs. Prediction for Wet Bulb Temperature")
+wet.bulb.plot
+```
+
+### Linear model of REL_HUMIDITY
+
+Real humidity is a complex case. In practice, using 3 variables to predict it results a good matching.
+
+```{r}
+real.humidity.mod <- lm(REL_HUMIDITY ~ DRY_AIR_PRESSURE + WET_AIR_DENSITY + Temperature, data = train.set)
+summary(real.humidity.mod)
+p.real.humidity <- predict(real.humidity.mod, newdata = test.set)
+real.humidity.data <- cbind(test.set[c("Time", "REL_HUMIDITY")], p.real.humidity)
+real.humidity.melt <- melt(real.humidity.data, id.vars = c("Time"))
+real.humidity.plot <- ggplot(real.humidity.melt, aes(x = Time, y = value, color = variable)) + geom_line() +
+    labs(title = "True Value vs. Prediction for Real Humidity")
+real.humidity.plot
+```
+
+## Conclusion
+
+We find that 6 variables are essential to describe the whole weather condition. They are
+`Time`, `Temperature`, `Avg.Wind.Speed`, `VAPOR_PRESSURE`, `DRY_AIR_PRESSURE` and `WET_AIR_DENSITY`.
+
+<br />
