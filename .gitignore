@@ -1,1 +1,7 @@
-# placeholder
+*.csv
+
+*~
+*.tmp
+
+.DS_Store
+**/.DS_Store
