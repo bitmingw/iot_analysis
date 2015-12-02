@@ -72,15 +72,26 @@ data_Pough$Time <- strptime(paste(data_Pough$Sample.Date, data_Pough$Sample.Time
 
 diff.time <- data_Le$Time
 diff.temp <- c(0, data_Le$TEMPERATURE[2:nrow(data_Le)] - data_Le$TEMPERATURE[1:nrow(data_Le)-1])
+diff.temp <- diff.temp / max(abs(diff.temp))
 diff.vapor.press <- c(0, data_Le$VAPOR_PRESSURE[2:nrow(data_Le)] - data_Le$VAPOR_PRESSURE[1:nrow(data_Le)-1])
+diff.vapor.press <- diff.vapor.press / max(abs(diff.vapor.press))
 diff.dry.press <- c(0, data_Le$DRY_AIR_PRESSURE[2:nrow(data_Le)] - data_Le$DRY_AIR_PRESSURE[1:nrow(data_Le)-1])
+diff.dry.press <- diff.dry.press / max(abs(diff.dry.press))
 diff.wet.density <- c(0, data_Le$WET_AIR_DENSITY[2:nrow(data_Le)] - data_Le$WET_AIR_DENSITY[1:nrow(data_Le)-1])
+diff.wet.density <- diff.wet.density / max(abs(diff.wet.density))
 diff.wind.speed <- c(0, data_Le$WIND_SPEED_AV[2:nrow(data_Le)] - data_Le$WIND_SPEED_AV[1:nrow(data_Le)-1])
-diff.wind.dir <- c(0, data_Le$RAW_WIND_DIR_AV[2:nrow(data_Le)] - data_Le$RAW_WIND_DIR_AV[1:nrow(data_Le)-1])
+diff.wind.speed <- diff.wind.speed / max(abs(diff.wind.speed))
+# diff.wind.dir <- c(0, data_Le$RAW_WIND_DIR_AV[2:nrow(data_Le)] - data_Le$RAW_WIND_DIR_AV[1:nrow(data_Le)-1])
 diff.rain.hr <- c(0, data_Le$RAIN_LAST_HR[2:nrow(data_Le)] - data_Le$RAIN_LAST_HR[1:nrow(data_Le)-1])
+diff.rain.hr <- diff.rain.hr / max(abs(diff.rain.hr))
 
-diff.data <- data.frame(diff.time, diff.temp, diff.vapor.press, diff.dry.press, diff.wet.density, diff.wind.speed, diff.wind.dir, diff.rain.hr)
+# diff.wind.speed temporarily removed since it is not stable...
+diff.data <- data.frame(diff.time, diff.temp, diff.vapor.press, diff.dry.press, diff.wet.density, diff.rain.hr)
 
 diff.melt <- melt(diff.data, id.vars = c("diff.time"))
 diff.plot <- ggplot(diff.melt, aes(x = diff.time, y = value, color = variable)) + geom_line()
 diff.plot
+# This plot illustrate the sudden change of values at some time for all those major variables
+# Next we need to figure out the exact time by moving average
+
+
