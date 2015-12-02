@@ -8,6 +8,12 @@
 # `source("weather_cor_analysis.R", print.eval = TRUE)`
 # In R console
 
+# Define Global Variables
+MOV_AVG_WINDOW = 21
+
+# Define helper functions
+ma <- function(x, n) {filter(x, rep(1/n, n), sides=2)}
+
 # Names of variables (Time is introduced by us)
 #  [1] "Sample.Date"               "Sample.Time"              
 #  [3] "TEMPERATURE"               "WIND_CHILL"               
@@ -90,8 +96,30 @@ diff.data <- data.frame(diff.time, diff.temp, diff.vapor.press, diff.dry.press, 
 
 diff.melt <- melt(diff.data, id.vars = c("diff.time"))
 diff.plot <- ggplot(diff.melt, aes(x = diff.time, y = value, color = variable)) + geom_line()
-diff.plot
-# This plot illustrate the sudden change of values at some time for all those major variables
-# Next we need to figure out the exact time by moving average
+#diff.plot # This plot illustrate the instance change of values at some time for all those major variables
 
 
+if (MOV_AVG_WINDOW %% 2) {
+    LEADING_ZEROS <- floor(MOV_AVG_WINDOW / 2)
+    TRAILING_ZEROS <- floor(MOV_AVG_WINDOW / 2)
+} else {
+    LEADING_ZEROS <- MOV_AVG_WINDOW / 2 - 1
+    TRAILING_ZEROS <- MOV_AVG_WINDOW / 2
+}
+diff.temp <- abs(c(rep(0, LEADING_ZEROS), diff.temp, rep(0, TRAILING_ZEROS)))
+diff.vapor.press <- abs(c(rep(0, LEADING_ZEROS), diff.vapor.press, rep(0, TRAILING_ZEROS)))
+diff.dry.press <- abs(c(rep(0, LEADING_ZEROS), diff.dry.press, rep(0, TRAILING_ZEROS)))
+diff.wet.density <- abs(c(rep(0, LEADING_ZEROS), diff.wet.density, rep(0, TRAILING_ZEROS)))
+diff.wind.speed <- abs(c(rep(0, LEADING_ZEROS), diff.wind.speed, rep(0, TRAILING_ZEROS)))
+diff.rain.hr <- abs(c(rep(0, LEADING_ZEROS), diff.rain.hr, rep(0, TRAILING_ZEROS)))
+avg.diff.temp <- as.vector(ma(diff.temp, MOV_AVG_WINDOW))[(LEADING_ZEROS+1):(LEADING_ZEROS+nrow(data_Le))]
+avg.diff.vapor.press <- as.vector(ma(diff.vapor.press, MOV_AVG_WINDOW))[(LEADING_ZEROS+1):(LEADING_ZEROS+nrow(data_Le))]
+avg.diff.dry.press <- as.vector(ma(diff.dry.press, MOV_AVG_WINDOW))[(LEADING_ZEROS+1):(LEADING_ZEROS+nrow(data_Le))]
+avg.diff.wet.density <- as.vector(ma(diff.wet.density, MOV_AVG_WINDOW))[(LEADING_ZEROS+1):(LEADING_ZEROS+nrow(data_Le))]
+avg.diff.wind.speed <- as.vector(ma(diff.wind.speed, MOV_AVG_WINDOW))[(LEADING_ZEROS+1):(LEADING_ZEROS+nrow(data_Le))]
+avg.diff.rain.hr <- as.vector(ma(diff.rain.hr, MOV_AVG_WINDOW))[(LEADING_ZEROS+1):(LEADING_ZEROS+nrow(data_Le))]
+
+avg.diff.data <- data.frame(diff.time, avg.diff.temp, avg.diff.vapor.press, avg.diff.dry.press, avg.diff.wet.density, avg.diff.wind.speed, avg.diff.rain.hr)
+avg.diff.melt <- melt(avg.diff.data, id.vars = c("diff.time"))
+avg.diff.plot <- ggplot(avg.diff.melt, aes(x = diff.time, y = value, color = variable)) + geom_line()
+avg.diff.plot # This plot illustrate the moving average change of values for all those major variables
