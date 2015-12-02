@@ -38,7 +38,7 @@
 # 1. Find the time of severe weather by gather differential of major variables
 #    Proposed major variables that indicate severe weather:
 #    TEMPERATURE, VAPOR_PRESSURE, DRY_AIR_PRESSURE, WET_AIR_DENSITY,
-#    WIND_SPEED_AV, RAW_WIND_DIR, RAIN_LAST_HR?
+#    WIND_SPEED_AV, RAW_WIND_DIR_AV, RAIN_LAST_HR
 #    Note: need to justify each variable (intuitively)
 #          need to reveal the correlation among a lot of WIND and RAIN variables
 # 2. Find the correlation of weather between stations use the variables above
@@ -57,6 +57,30 @@ data_Marl <- read.csv("Marlboro+weather+10-29-15.csv", stringsAsFactors = FALSE)
 data_Pough <- read.csv("Poughkeepsie+weather+10-29-15.csv", stringsAsFactors = FALSE)
 
 # Convert time string to POSIX time
-data_Le$Time <- strptime(paste(data_Le$Sample.Date, data_Le$Sample.Time), "%m/%d/%Y %H:%M:%S")
-data_Marl$Time <- strptime(paste(data_Marl$Sample.Date, data_Marl$Sample.Time), "%m/%d/%Y %H:%M:%S")
-data_Pough$Time <- strptime(paste(data_Pough$Sample.Date, data_Pough$Sample.Time), "%m/%d/%Y %H:%M:%S")
+data_Le$Time <- strptime(paste(data_Le$Sample.Date, data_Le$Sample.Time),
+    "%m/%d/%Y %H:%M:%S")
+data_Marl$Time <- strptime(paste(data_Marl$Sample.Date, data_Marl$Sample.Time),
+    "%m/%d/%Y %H:%M:%S")
+data_Pough$Time <- strptime(paste(data_Pough$Sample.Date, data_Pough$Sample.Time),
+    "%m/%d/%Y %H:%M:%S")
+
+###############################################################################
+
+# Task0: show the correlation among several wind / rain variables
+
+# Task1: explore the variables using the data from Lexington weather station
+
+diff.time <- data_Le$Time
+diff.temp <- c(0, data_Le$TEMPERATURE[2:nrow(data_Le)] - data_Le$TEMPERATURE[1:nrow(data_Le)-1])
+diff.vapor.press <- c(0, data_Le$VAPOR_PRESSURE[2:nrow(data_Le)] - data_Le$VAPOR_PRESSURE[1:nrow(data_Le)-1])
+diff.dry.press <- c(0, data_Le$DRY_AIR_PRESSURE[2:nrow(data_Le)] - data_Le$DRY_AIR_PRESSURE[1:nrow(data_Le)-1])
+diff.wet.density <- c(0, data_Le$WET_AIR_DENSITY[2:nrow(data_Le)] - data_Le$WET_AIR_DENSITY[1:nrow(data_Le)-1])
+diff.wind.speed <- c(0, data_Le$WIND_SPEED_AV[2:nrow(data_Le)] - data_Le$WIND_SPEED_AV[1:nrow(data_Le)-1])
+diff.wind.dir <- c(0, data_Le$RAW_WIND_DIR_AV[2:nrow(data_Le)] - data_Le$RAW_WIND_DIR_AV[1:nrow(data_Le)-1])
+diff.rain.hr <- c(0, data_Le$RAIN_LAST_HR[2:nrow(data_Le)] - data_Le$RAIN_LAST_HR[1:nrow(data_Le)-1])
+
+diff.data <- data.frame(diff.time, diff.temp, diff.vapor.press, diff.dry.press, diff.wet.density, diff.wind.speed, diff.wind.dir, diff.rain.hr)
+
+diff.melt <- melt(diff.data, id.vars = c("diff.time"))
+diff.plot <- ggplot(diff.melt, aes(x = diff.time, y = value, color = variable)) + geom_line()
+diff.plot
