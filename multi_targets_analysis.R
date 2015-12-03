@@ -96,6 +96,9 @@ wind.plot <- ggplot(wind.melt, aes(x = diff.time, y = value, color = variable)) 
 
 # Task1: explore the variables using the data from Lexington weather station
 
+# Potential logic fault: if using normalized difference, the absolute values
+# are not shown. We may want to see severe weather by looking at the distribution
+
 diff.temp <- c(0, data_Le$TEMPERATURE[2:nrow(data_Le)] - data_Le$TEMPERATURE[1:nrow(data_Le)-1])
 diff.temp <- diff.temp / max(abs(diff.temp))
 diff.vapor.press <- c(0, data_Le$VAPOR_PRESSURE[2:nrow(data_Le)] - data_Le$VAPOR_PRESSURE[1:nrow(data_Le)-1])
@@ -145,3 +148,42 @@ avg.diff.data <- data.frame(diff.time, avg.diff.temp, avg.diff.vapor.press,
 avg.diff.melt <- melt(avg.diff.data, id.vars = c("diff.time"))
 avg.diff.plot <- ggplot(avg.diff.melt, aes(x = diff.time, y = value, color = variable)) + geom_line()
 #avg.diff.plot # This plot illustrate the moving average change of values for all those major variables
+
+
+avg.diff.data.notime <- data.frame(avg.diff.temp, avg.diff.vapor.press,
+    avg.diff.dry.press, avg.diff.wet.density, avg.diff.rain.rate)
+cor(avg.diff.data.notime)
+# Conclusion: the difference of temperature and wet are density has very strong correlation
+# We may use temperature to identify severe weather
+
+# Histogram of temperature difference
+avg.diff.temp.hist <- ggplot(data.frame(avg.diff.temp), aes(avg.diff.temp)) + geom_histogram(binwidth = 0.01, col = "red", fill = "yellow")
+# It is not appropriate to used 3*sigma since it is not normal distribution
+# From intuition we can set quantile = 0.98 to get the threshold
+bad.weather.temp.thres <- quantile(avg.diff.temp, 0.98)
+bad.weather.temp <- avg.diff.temp > bad.weather.temp.thres
+
+# Usually a severe weather is accompanied with raining, let's exam that!
+# NOTE: it only works when most of time it is not raining
+avg.diff.rain.rate.hist <- ggplot(data.frame(avg.diff.rain.rate), aes(avg.diff.rain.rate)) + geom_histogram(binwidth = 0.01, col = "red", fill = "yellow")
+bad.weather.rain.thres <- quantile(avg.diff.rain.rate, 0.90) # How to pick the quantile?
+bad.weather.rain <- avg.diff.rain.rate > bad.weather.rain.thres
+table(bad.weather.temp, bad.weather.rain)
+# Conclusion: use the conbination of temperature change and rain rate to determine severe weather
+
+# Determine the time slice of severe weather
+now.bad.weather = FALSE
+bad.weather.start.time <- c()
+bad.weather.end.time <- c()
+for (i in 1:length(bad.weather.temp)) {
+    if (bad.weather.temp[i] && bad.weather.rain[i] && (!now.bad.weather)) {
+        now.bad.weather <- TRUE
+        bad.weather.start.time <- c(bad.weather.start.time, strftime(diff.time[i], "%m/%d/%Y %H:%M:%S"))
+    } else if (((!bad.weather.temp[i]) || (!bad.weather.rain[i])) && now.bad.weather) {
+        now.bad.weather <- FALSE
+        bad.weather.end.time <- c(bad.weather.end.time, strftime(diff.time[i], "%m/%d/%Y %H:%M:%S"))
+    }
+}
+
+
+
