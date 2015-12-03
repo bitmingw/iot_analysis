@@ -21,6 +21,7 @@ SHOW_WIND_COR <- FALSE
 SHOW_TIME_DIFF_PLOT <- TRUE
 SHOW_MOV_AVG <- TRUE
 SHOW_BAD_WEATHER_TIME <- TRUE
+SHOW_STATION_COR <- TRUE
 
 # Names of variables (Time is introduced by us)
 #  [1] "Sample.Date"               "Sample.Time"              
@@ -208,7 +209,19 @@ for (i in 1:length(l.bad.weather.temp)) {
 ###############################################################################
 
 # Task3: reveal the relationship among several weather stations
-
+if (SHOW_STATION_COR) {
+l.temp.data <- data.frame(Time = data_Le$Time, Temp = data_Le$TEMPERATURE)
+m.temp.data <- data.frame(Time = data_Marl$Time, Temp = data_Marl$TEMPERATURE)
+p.temp.data <- data.frame(Time = data_Pough$Time, Temp = data_Pough$TEMPERATURE)
+temp.plot <- ggplot() + geom_line(data = l.temp.data, aes(x = Time, y = Temp, color = "red")) +
+    geom_line(data = m.temp.data, aes(x = Time, y = Temp, color = "blue")) +
+    geom_line(data = p.temp.data, aes(x = Time, y = Temp, color = "green"))
+# It seems that red and green are more correlated to each other
+cor(data_Le$TEMPERATURE, data_Marl$TEMPERATURE[1:2877])
+cor(data_Le$TEMPERATURE, data_Pough$TEMPERATURE[1:2877])
+cor(data_Marl$TEMPERATURE, data_Pough$TEMPERATURE)
+# We can't just simple by looking at the correlation
+} # SHOW_STATION_COR
 
 ###############################################################################
 
