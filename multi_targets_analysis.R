@@ -2,7 +2,7 @@
 # Correlation of three weather stations
 # Arthor: bitmingw
 # Created: 2 Dec 2015
-# Updated: 2 Dec 2015
+# Updated: 3 Dec 2015
 
 # Execute the file by typing
 # `source("weather_cor_analysis.R", print.eval = TRUE)`
@@ -49,18 +49,6 @@ SHOW_TIME_DELAY <- TRUE
 # [43] "RAIN_RATE"                 "RAIN_LAST_HR"             
 # [45] "PRECIP_TYPE"               "RAW_BAROM_PRESS"          
 # [47] "ADJ_BAROM_PRESS"           "Time" 
-
-# TODO:
-# 1. Find the time of severe weather by gather differential of major variables
-#    Proposed major variables that indicate severe weather:
-#    TEMPERATURE, VAPOR_PRESSURE, DRY_AIR_PRESSURE, WET_AIR_DENSITY,
-#    WIND_SPEED_AV, RAW_WIND_DIR_AV, RAIN_RATE
-#    Note: need to justify each variable (intuitively)
-#          need to reveal the correlation among a lot of WIND and RAIN variables
-# 2. Find the correlation of weather between stations use the variables above
-# 3. If there is a strong relationship, try find the time delay of
-#    the same event on different weather stations
-# 4. Reverse engineering: get the trend of evolution
 
 # Load libraries
 library(ggplot2)
