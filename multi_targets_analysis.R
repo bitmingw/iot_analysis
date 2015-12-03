@@ -22,6 +22,7 @@ SHOW_TIME_DIFF_PLOT <- TRUE
 SHOW_MOV_AVG <- TRUE
 SHOW_BAD_WEATHER_TIME <- TRUE
 SHOW_STATION_COR <- TRUE
+SHOW_TIME_DELAY <- TRUE
 
 # Names of variables (Time is introduced by us)
 #  [1] "Sample.Date"               "Sample.Time"              
@@ -192,14 +193,15 @@ table(l.bad.weather.temp, l.bad.weather.rain)
 # Conclusion: use the combination of temperature change and rain rate to determine severe weather
 
 # Determine the time slice of severe weather
+l.bad.weather <- l.bad.weather.temp & l.bad.weather.rain
 l.now.bad.weather = FALSE
 l.bad.weather.start.time <- c()
 l.bad.weather.end.time <- c()
 for (i in 1:length(l.bad.weather.temp)) {
-    if (l.bad.weather.temp[i] && l.bad.weather.rain[i] && (!l.now.bad.weather)) {
+    if (l.bad.weather[i] && (!l.now.bad.weather)) {
         l.now.bad.weather <- TRUE
         l.bad.weather.start.time <- c(l.bad.weather.start.time, strftime(l.diff.time[i], "%m/%d/%Y %H:%M:%S"))
-    } else if (((!l.bad.weather.temp[i]) || (!l.bad.weather.rain[i])) && l.now.bad.weather) {
+    } else if (!l.bad.weather[i] && l.now.bad.weather) {
         l.now.bad.weather <- FALSE
         l.bad.weather.end.time <- c(l.bad.weather.end.time, strftime(l.diff.time[i], "%m/%d/%Y %H:%M:%S"))
     }
@@ -214,8 +216,10 @@ l.temp.data <- data.frame(Time = data_Le$Time, Temp = data_Le$TEMPERATURE)
 m.temp.data <- data.frame(Time = data_Marl$Time, Temp = data_Marl$TEMPERATURE)
 p.temp.data <- data.frame(Time = data_Pough$Time, Temp = data_Pough$TEMPERATURE)
 temp.plot <- ggplot() + geom_line(data = l.temp.data, aes(x = Time, y = Temp, color = "red")) +
-    geom_line(data = m.temp.data, aes(x = Time, y = Temp, color = "blue")) +
-    geom_line(data = p.temp.data, aes(x = Time, y = Temp, color = "green"))
+    geom_line(data = m.temp.data, aes(x = Time, y = Temp, color = "green")) +
+    geom_line(data = p.temp.data, aes(x = Time, y = Temp, color = "blue"))
+plot(temp.plot)
+dev.new()
 # It seems that red and green are more correlated to each other
 cor(data_Le$TEMPERATURE, data_Marl$TEMPERATURE[1:2877])
 cor(data_Le$TEMPERATURE, data_Pough$TEMPERATURE[1:2877])
@@ -226,4 +230,69 @@ cor(data_Marl$TEMPERATURE, data_Pough$TEMPERATURE)
 ###############################################################################
 
 # Task4: find the time delay for severe weather condition
+if (SHOW_TIME_DELAY) {
+# Do analysis for Marlboro
+m.diff.time <- data_Marl$Time
+m.diff.temp <- c(0, data_Marl$TEMPERATURE[2:nrow(data_Marl)] - data_Marl$TEMPERATURE[1:nrow(data_Marl)-1])
+m.diff.temp <- m.diff.temp / max(abs(m.diff.temp))
+m.diff.rain.rate <- c(0, data_Marl$RAIN_RATE[2:nrow(data_Marl)] - data_Marl$RAIN_RATE[1:nrow(data_Marl)-1])
+m.diff.rain.rate <- m.diff.rain.rate / max(abs(m.diff.rain.rate))
+m.diff.temp <- abs(c(rep(0, LEADING_ZEROS), m.diff.temp, rep(0, TRAILING_ZEROS)))
+m.avg.diff.temp <- as.vector(ma(m.diff.temp, MOV_AVG_WINDOW))[(LEADING_ZEROS+1):(LEADING_ZEROS+nrow(data_Marl))]
+m.diff.rain.rate <- abs(c(rep(0, LEADING_ZEROS), m.diff.rain.rate, rep(0, TRAILING_ZEROS)))
+m.avg.diff.rain.rate <- as.vector(ma(m.diff.rain.rate, MOV_AVG_WINDOW))[(LEADING_ZEROS+1):(LEADING_ZEROS+nrow(data_Marl))]
+m.bad.weather.temp.thres <- quantile(m.avg.diff.temp, TEMP_QUANTILE)
+m.bad.weather.temp <- m.avg.diff.temp > m.bad.weather.temp.thres
+m.bad.weather.rain.thres <- quantile(m.avg.diff.rain.rate, RAIN_QUANTILE)
+m.bad.weather.rain <- m.avg.diff.rain.rate > m.bad.weather.rain.thres
+m.bad.weather <- m.bad.weather.temp & m.bad.weather.rain
+m.now.bad.weather = FALSE
+m.bad.weather.start.time <- c()
+m.bad.weather.end.time <- c()
+for (i in 1:length(m.bad.weather.temp)) {
+    if (m.bad.weather[i] && (!m.now.bad.weather)) {
+        m.now.bad.weather <- TRUE
+        m.bad.weather.start.time <- c(m.bad.weather.start.time, strftime(m.diff.time[i], "%m/%d/%Y %H:%M:%S"))
+    } else if (!m.bad.weather[i] && m.now.bad.weather) {
+        m.now.bad.weather <- FALSE
+        m.bad.weather.end.time <- c(m.bad.weather.end.time, strftime(m.diff.time[i], "%m/%d/%Y %H:%M:%S"))
+    }
+}
+# Do analysis for Poughkeepsie
+p.diff.time <- data_Pough$Time
+p.diff.temp <- c(0, data_Pough$TEMPERATURE[2:nrow(data_Pough)] - data_Pough$TEMPERATURE[1:nrow(data_Pough)-1])
+p.diff.temp <- p.diff.temp / max(abs(p.diff.temp))
+p.diff.rain.rate <- c(0, data_Pough$RAIN_RATE[2:nrow(data_Pough)] - data_Pough$RAIN_RATE[1:nrow(data_Pough)-1])
+p.diff.rain.rate <- p.diff.rain.rate / max(abs(p.diff.rain.rate))
+p.diff.temp <- abs(c(rep(0, LEADING_ZEROS), p.diff.temp, rep(0, TRAILING_ZEROS)))
+p.avg.diff.temp <- as.vector(ma(p.diff.temp, MOV_AVG_WINDOW))[(LEADING_ZEROS+1):(LEADING_ZEROS+nrow(data_Pough))]
+p.diff.rain.rate <- abs(c(rep(0, LEADING_ZEROS), p.diff.rain.rate, rep(0, TRAILING_ZEROS)))
+p.avg.diff.rain.rate <- as.vector(ma(p.diff.rain.rate, MOV_AVG_WINDOW))[(LEADING_ZEROS+1):(LEADING_ZEROS+nrow(data_Pough))]
+p.bad.weather.temp.thres <- quantile(p.avg.diff.temp, TEMP_QUANTILE)
+p.bad.weather.temp <- p.avg.diff.temp > m.bad.weather.temp.thres
+p.bad.weather.rain.thres <- quantile(p.avg.diff.rain.rate, RAIN_QUANTILE)
+p.bad.weather.rain <- p.avg.diff.rain.rate > p.bad.weather.rain.thres
+p.bad.weather <- p.bad.weather.temp & p.bad.weather.rain
+p.now.bad.weather = FALSE
+p.bad.weather.start.time <- c()
+p.bad.weather.end.time <- c()
+for (i in 1:length(p.bad.weather.temp)) {
+    if (p.bad.weather[i] && (!p.now.bad.weather)) {
+        p.now.bad.weather <- TRUE
+        p.bad.weather.start.time <- c(p.bad.weather.start.time, strftime(p.diff.time[i], "%m/%d/%Y %H:%M:%S"))
+    } else if (!p.bad.weather[i] && p.now.bad.weather) {
+        p.now.bad.weather <- FALSE
+        p.bad.weather.end.time <- c(p.bad.weather.end.time, strftime(p.diff.time[i], "%m/%d/%Y %H:%M:%S"))
+    }
+}
+# Combine the results of three stations
+l.bad.time <- data.frame(Time = data_Le$Time, Bad.Weather = as.numeric(l.bad.weather))
+m.bad.time <- data.frame(Time = data_Marl$Time, Bad.Weather = as.numeric(m.bad.weather))
+p.bad.time <- data.frame(Time = data_Pough$Time, Bad.Weather = as.numeric(p.bad.weather))
+bad.time.plot <- ggplot(aes()) + geom_line(data = l.bad.time, aes(x = Time, y = Bad.Weather, color = "red")) +
+    geom_line(data = m.bad.time, aes(x = Time, y = Bad.Weather, color = "green")) +
+    geom_line(data = p.bad.time, aes(x = Time, y = Bad.Weather, color = "blue"))
+plot(bad.time.plot)
+} # SHOW_TIME_DELAY
+
 
