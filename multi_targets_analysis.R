@@ -2,10 +2,10 @@
 # Correlation of three weather stations
 # Arthor: bitmingw
 # Created: 2 Dec 2015
-# Updated: 3 Dec 2015
+# Updated: 5 Dec 2015
 
 # Execute the file by typing
-# `source("weather_cor_analysis.R", print.eval = TRUE)`
+# `source("multi_targets_analysis.R", print.eval = TRUE)`
 # In R console
 
 # Define Global Variables
@@ -277,7 +277,7 @@ for (i in 1:length(p.bad.weather.temp)) {
 l.bad.time <- data.frame(Time = data_Le$Time, Bad.Weather = as.numeric(l.bad.weather))
 m.bad.time <- data.frame(Time = data_Marl$Time, Bad.Weather = as.numeric(m.bad.weather))
 p.bad.time <- data.frame(Time = data_Pough$Time, Bad.Weather = as.numeric(p.bad.weather))
-bad.time.plot <- ggplot(aes()) + geom_line(data = l.bad.time, aes(x = Time, y = Bad.Weather, color = "red")) +
+bad.time.plot <- ggplot() + geom_line(data = l.bad.time, aes(x = Time, y = Bad.Weather, color = "red")) +
     geom_line(data = m.bad.time, aes(x = Time, y = Bad.Weather, color = "green")) +
     geom_line(data = p.bad.time, aes(x = Time, y = Bad.Weather, color = "blue"))
 plot(bad.time.plot)
