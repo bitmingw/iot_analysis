@@ -4,35 +4,16 @@
 # Oct.22, 2015
 # Test on ecelinsrvx.ece.gatech.edu
 
+import os
 import csv
 import sys
 import time
 import numpy as np
+#import openpyxl as px
 import matplotlib as mpl
 mpl.use( 'Agg' )
 import matplotlib.pyplot as plt
 import os
-
-f = open( sys.argv[1], 'r' )
-f.next() # skip first header line
-i = 0;
-
-
-
-
-print "Reading src data file: %s "  % sys.argv[1]
-
-
-
-
-
-
-#header
-header_list = []
-
-
-#time list in hour
-time = []
 
 
 
@@ -84,64 +65,145 @@ rain_last_hr = []
 prec_type = []
 raw_barom_pres = []
 adj_barom_pres = []
+time = []
+
+for num_files in range(0,3):
+
+	f = open( sys.argv[1+num_files], 'rb' )
+
+	num_headers = 4
+	for x in range(0,num_headers):
+		f.next() # skip first header line
+	i = 0
+	col_off = 1;
+
+	time.append([])
+	t_list.append([])
+	temp_list.append([])
+	wind_chi.append([])
+	heat_idx.append([])
+	dew_point.append([])
+	deg_day.append([])
+	dens_alt.append([])
+	avg_temp_today.append([])
+	wet_bulb_glob_temp.append([])
+	sat_vap_pres.append([])
+	vap_pres.append([])
+	dry_air_pres.append([])
+	dry_air_den.append([])
+	abs_hum.append([])
+	air_den_rto.append([])
+	adj_alt.append([])
+	sae_cor_fac.append([])
+	wet_air_den.append([])
+	wet_bulb_tmp.append([])
+	rel_hum.append([])
+	avg_wind_spd.append([])
+	wind_spd_mx.append([])
+	wind_spd_mn.append([])
+	raw_wind_dir.append([])
+	raw_wind_dir_av.append([])
+	raw_wind_dir_mx.append([])
+	raw_wind_dir_mn.append([])
+	sec3_roll_avg_wind_spd.append([])
+	sec3_roll_avg_wind_dir.append([])
+	min2_roll_avg_wind_spd.append([])	
+	min2_roll_avg_wind_dir.append([])
+	min10_roll_avg_wind_spd.append([])
+	min10_roll_avg_wind_dir.append([])
+	min60_wind_gust_dir.append([])
+	min60_wind_gust_spd.append([])
+	min10_wind_gust_dir.append([])
+	min10_wind_gust_spd.append([])
+	rain_tdy.append([])
+	rain_this_wk.append([])
+	rain_this_mth.append([])
+	rain_this_yr.append([])
+	rain_rate.append([])
+	rain_last_hr.append([])
+	prec_type.append([])
+	raw_barom_pres.append([])
+	adj_barom_pres.append([])
+
+
+
+	print "Reading src data file: %s "  % sys.argv[1+num_files]
+	filename, file_ext = os.path.splitext(sys.argv[1+num_files])
+
+
+
+
+
+	#header
+	header_list = []
+
+
+	#time list in hour
+	
 
 
 
 
 
 
-try:
-    reader = csv.reader(f)
-    for row in reader:
-	t_list.append( row[0] )
-	temp_list.append( float(row[1]) )
-	wind_chi.append( float(row[2]) )
-	heat_idx.append( int(row[3]) )
-	dew_point.append( float(row[4]) )
-	deg_day.append( float(row[5]) )
-	dens_alt.append( float(row[6]) )
-	avg_temp_today.append( float(row[7]) )
-	wet_bulb_glob_temp.append( float(row[8]) )
-	sat_vap_pres.append( float(row[9]) )
-	vap_pres.append( float(row[10]) )
-	dry_air_pres.append( float(row[11]) )
-	dry_air_den.append( float(row[12]) )
-	abs_hum.append( float(row[13]) )
-	air_den_rto.append( float(row[14]) )
-	adj_alt.append( float(row[15]) )
-	sae_cor_fac.append( float(row[16]) )
-	wet_air_den.append( float(row[17]) )
-	wet_bulb_tmp.append( float(row[18]) )
-	rel_hum.append( float(row[19]) )
-	avg_wind_spd.append( float(row[20]) )
-	wind_spd_mx.append( float(row[21]) )
-	wind_spd_mn.append( float(row[22]) )
-	raw_wind_dir.append( float(row[23]) )
-	raw_wind_dir_av.append( float(row[24]) )
-	raw_wind_dir_mx.append( float(row[25]) )
-	raw_wind_dir_mn.append( float(row[26]) )
-	sec3_roll_avg_wind_spd.append( float(row[27]) )
-	sec3_roll_avg_wind_dir.append( float(row[28]) )
-	min2_roll_avg_wind_spd.append( float(row[29]) )
-	min2_roll_avg_wind_dir.append( float(row[30]) )
-	min10_roll_avg_wind_spd.append( float(row[31]) )
-	min10_roll_avg_wind_dir.append( float(row[32]) )
-	min60_wind_gust_dir.append( int(row[33]) )
-	min60_wind_gust_spd.append( row[34] )
-	min10_wind_gust_dir.append( int(row[35]) )
-	min10_wind_gust_spd.append( row[36] )
-	rain_tdy.append( int(row[37]) )
-	rain_this_wk.append( float(row[38]) )
-	rain_this_mth.append( float(row[39]) )
-	rain_this_yr.append( float(row[40]) )
-	rain_rate.append( int(row[41]) )
-	rain_last_hr.append( int(row[42]) )
-	prec_type.append( int(row[43]) )
-	raw_barom_pres.append( float(row[44]) )
-	adj_barom_pres.append( float(row[45]) )
 
-	time.append(float(i)/float(60))
 
+
+
+	try:
+    		reader = csv.reader(f)   
+    		for row in reader:
+			t_list[num_files].append( row[0+col_off] )
+			temp_list[num_files].append( float(row[1+col_off]) )
+			wind_chi[num_files].append( float(row[2+col_off]) )
+			heat_idx[num_files].append( int(row[3+col_off]) )
+			dew_point[num_files].append( float(row[4+col_off]) )
+			deg_day[num_files].append( float(row[5+col_off]) )
+			#print(row[6+col_off])
+			dens_alt[num_files].append( float(row[6+col_off]) )
+	
+			avg_temp_today[num_files].append( float(row[7+col_off]) )
+			wet_bulb_glob_temp[num_files].append( float(row[8+col_off]) )
+			sat_vap_pres[num_files].append( float(row[9+col_off]) )
+			vap_pres[num_files].append( float(row[10+col_off]) )
+			dry_air_pres[num_files].append( float(row[11+col_off]) )
+			dry_air_den[num_files].append( float(row[12+col_off]) )
+			abs_hum[num_files].append( float(row[13+col_off]) )
+			air_den_rto[num_files].append( float(row[14+col_off]) )
+			adj_alt[num_files].append( float(row[15+col_off]) )
+			sae_cor_fac[num_files].append( float(row[16+col_off]) )
+			wet_air_den[num_files].append( float(row[17+col_off]) )
+			wet_bulb_tmp[num_files].append( float(row[18+col_off]) )
+			rel_hum[num_files].append( float(row[19+col_off]) )
+			avg_wind_spd[num_files].append( float(row[20+col_off]) )
+			wind_spd_mx[num_files].append( float(row[21+col_off]) )
+			wind_spd_mn[num_files].append( float(row[22+col_off]) )
+			raw_wind_dir[num_files].append( float(row[23+col_off]) )
+			raw_wind_dir_av[num_files].append( float(row[24+col_off]) )
+			raw_wind_dir_mx[num_files].append( float(row[25+col_off]) )
+			raw_wind_dir_mn[num_files].append( float(row[26+col_off]) )
+			sec3_roll_avg_wind_spd[num_files].append( float(row[27+col_off]) )
+			sec3_roll_avg_wind_dir[num_files].append( float(row[28+col_off]) )
+			min2_roll_avg_wind_spd[num_files].append( float(row[29+col_off]) )
+			min2_roll_avg_wind_dir[num_files].append( float(row[30+col_off]) )
+			min10_roll_avg_wind_spd[num_files].append( float(row[31+col_off]) )
+			min10_roll_avg_wind_dir[num_files].append( float(row[32+col_off]) )
+			min60_wind_gust_dir[num_files].append( int(row[33+col_off]) )
+			min60_wind_gust_spd[num_files].append( row[34+col_off] )
+			min10_wind_gust_dir[num_files].append( int(row[35+col_off]) )
+			min10_wind_gust_spd[num_files].append( row[36+col_off] )
+			rain_tdy[num_files].append( float(row[37+col_off]) )
+			rain_this_wk[num_files].append( float(row[38+col_off]) )
+			rain_this_mth[num_files].append( float(row[39+col_off]) )
+			rain_this_yr[num_files].append( float(row[40+col_off]) )
+			rain_rate[num_files].append( float(row[41+col_off]) )
+			rain_last_hr[num_files].append( float(row[42+col_off]) )
+			prec_type[num_files].append( float(row[43+col_off]) )
+			raw_barom_pres[num_files].append( float(row[44+col_off]) )
+			adj_barom_pres[num_files].append( float(row[45+col_off]) )
+	
+			time[num_files].append(float(i)/float(60))
+			i = i + 1
 
 
 
@@ -150,115 +212,130 @@ try:
 	#if i < 10:	
 	#    print raw_wind_dir[i]
 
-   	i = i + 1
-finally:
-    f.close()
+   			
+	finally:
+    		f.close()
+		
 
 
+	str_path = 'figure_csv/' + sys.argv[num_files+1]
 
+	print "Total Lines(header not included):  %d " % i
 
-print "Total Lines(header not included):  %d " % i
+	if not os.path.exists(str_path):
+		os.makedirs(str_path)
 
-if not os.path.exists('figure'):
-	os.makedirs('figure')
-
-
+'''
  
-fig = plt.figure(figsize = (10,5))
-plt.plot( time, temp_list )
-fig.savefig('figure/temp_list.png')
+	fig = plt.figure(figsize = (10,5))
+	plt.plot( time[num_files], temp_list[num_files] )
+	fig.savefig(str_path+'/temp_list.png')
+	plt.close(fig)
+	print "Figure for Temperature complete !"
+
+
+	fig = plt.figure(figsize = (10,5))
+	plt.plot( time[num_files], avg_wind_spd[num_files] )
+	fig.savefig(str_path+'/avg_wind_spd.png')
+	plt.close(fig)
+	print "Figure for Average Wind Speed complete !"
+
+	fig = plt.figure(figsize = (10,5))
+	plt.plot( time[num_files], vap_pres[num_files] )
+	fig.savefig(str_path+'/vap_pre.png')
+	plt.close(fig)
+	print "Figure for Vapor Pressure complete !"
+
+
+	fig = plt.figure(figsize = (10,5))
+	plt.plot( time[num_files], dry_air_pres[num_files] )
+	fig.savefig(str_path+'/dry_air_pres.png')
+	plt.close(fig)
+	print "Figure for Dry Air Pressure complete !"
+
+
+	fig = plt.figure(figsize = (10,5))
+	plt.plot( time[num_files], wet_air_den[num_files] )
+	fig.savefig(str_path+'/wet_air_den.png')
+	plt.close(fig)
+	print "Figure for Wet AIr Density complete !"
+
+
+'''
+
+
+
+
+fig = plt.figure(figsize = (30,15))
+plt.plot( time[0], temp_list[0], 'r', label = sys.argv[1] )
+plt.plot( time[1], temp_list[1], 'g', label = sys.argv[2] )
+plt.plot( time[2], temp_list[2], 'b', label = sys.argv[3] )
+plt.legend( loc = 'upper right' )
+
+fig.savefig('figure_csv/temperature.png')
 plt.close(fig)
-print "Figure for Temperature complete !"
 
 
+fig = plt.figure(figsize = (30,15))
+plt.plot( time[0], avg_wind_spd[0], 'r', label = sys.argv[1] )
+plt.plot( time[1], avg_wind_spd[1], 'g', label = sys.argv[2] )
+plt.plot( time[2], avg_wind_spd[2], 'b', label = sys.argv[3] )
+plt.legend( loc = 'upper right' )
 
-fig = plt.figure(figsize = (10,5))
-plt.plot( time, wind_chi )
-fig.savefig('figure/wind_chi.png')
+fig.savefig('figure_csv/avg_wind_spd.png')
 plt.close(fig)
-print "Figure for Wind.Chill complete !"
 
 
-fig = plt.figure(figsize = (10,5))
-plt.plot( time, heat_idx )
-fig.savefig('figure/heat_idx.png')
+fig = plt.figure(figsize = (30,15))
+plt.plot( time[0], vap_pres[0], 'r', label = sys.argv[1] )
+plt.plot( time[1], vap_pres[1], 'g', label = sys.argv[2] )
+plt.plot( time[2], vap_pres[2], 'b', label = sys.argv[3] )
+plt.legend( loc = 'upper right' )
+
+fig.savefig('figure_csv/vap_pres.png')
 plt.close(fig)
-print "Figure for heat_idx complete !"
 
 
-fig = plt.figure(figsize = (10,5))
-plt.plot( time, dew_point )
-fig.savefig('figure/dew_point.png')
+fig = plt.figure(figsize = (30,15))
+plt.plot( time[0], dry_air_pres[0], 'r', label = sys.argv[1] )
+plt.plot( time[1], dry_air_pres[1], 'g', label = sys.argv[2] )
+plt.plot( time[2], dry_air_pres[2], 'b', label = sys.argv[3] )
+plt.legend( loc = 'upper right' )
+
+fig.savefig('figure_csv/dry_air_pres.png')
 plt.close(fig)
-print "Figure for dew_point complete !"
 
 
-fig = plt.figure(figsize = (10,5))
-plt.plot( time, deg_day )
-fig.savefig('figure/degree_day.png')
+fig = plt.figure(figsize = (30,15))
+plt.plot( time[0], wet_air_den[0], 'r', label = sys.argv[1] )
+plt.plot( time[1], wet_air_den[1], 'g', label = sys.argv[2] )
+plt.plot( time[2], wet_air_den[2], 'b', label = sys.argv[3] )
+plt.legend( loc = 'upper right' )
+
+fig.savefig('figure_csv/wet_air_den.png')
 plt.close(fig)
-print "Figure for degree_day complete !"
 
 
-fig = plt.figure(figsize = (10,5))
-plt.plot( time, dens_alt )
-fig.savefig('figure/density_altitude.png')
-plt.close(fig)
-print "Figure for density_altitude complete !"
-
-fig = plt.figure(figsize = (10,5))
-plt.plot( time, avg_temp_today )
-fig.savefig('figure/average_temperature_today.png')
-plt.close(fig)
-print "Figure for average_temperature_today complete !"
-
-fig = plt.figure(figsize = (10,5))
-plt.plot( time, wet_bulb_tmp )
-fig.savefig('figure/wet_bulb_tmp.png')
-plt.close(fig)
-print "Figure for wet_bulb_tmp complete !"
-
-fig = plt.figure(figsize = (10,5))
-plt.plot( time, sat_vap_pres )
-fig.savefig('figure/sat_vap_pres.png')
-plt.close(fig)
-print "Figure for sat_vap_pres complete !"
 
 
-fig = plt.figure(figsize = (10,5))
-plt.plot( time, vap_pres )
-fig.savefig('figure/vap_pres.png')
-plt.close(fig)
-print "Figure for vap_pres complete !"
 
-fig = plt.figure(figsize = (10,5))
-plt.plot( time, dry_air_pres )
-fig.savefig('figure/dry_air_pres.png')
-plt.close(fig)
-print "Figure for dry_air_pres complete !"
 
-fig = plt.figure(figsize = (10,5))
-plt.plot( time, dry_air_den )
-fig.savefig('figure/dry_air_den.png')
-plt.close(fig)
-print "Figure for dry_air_den complete !"
 
-fig = plt.figure(figsize = (10,5))
-plt.plot( time, abs_hum )
-fig.savefig('figure/abs_hum.png')
-plt.close(fig)
-print "Figure for abs_hum complete !"
 
-fig = plt.figure(figsize = (10,5))
-plt.plot( time, air_den_rto )
-fig.savefig('figure/air_den_rto.png')
-plt.close(fig)
-print "Figure for air_den_rto complete !"
 
-fig = plt.figure(figsize = (10,5))
-plt.plot( time, adj_alt )
-fig.savefig('figure/adj_alt.png')
-plt.close(fig)
-print "Figure for adj_alt complete !"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
